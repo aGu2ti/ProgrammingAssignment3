@@ -30,7 +30,7 @@ best <- function(state, outcome) {
 	minValue<-min(hosp$Values)
 	
 	##Sort result alphabetical
-	ranking<-sort(hosp$Name[hosp$Values<=minValue], decreasing=FALSE);	
+	ranking<-sort(hosp$Name[hosp$Values==minValue], decreasing=FALSE);	
 	#ranking<-as.character(ranking)
 	
 	## Return hospital name in that state with lowest 30-day death

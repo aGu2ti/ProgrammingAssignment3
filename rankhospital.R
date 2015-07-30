@@ -1,15 +1,5 @@
 rankhospital <- function(state, outcome, num = "best") {
 	## Read outcome data
-	ranking<-getRanking(state, outcome)
-	
-	ranking
-		
-	## Return hospital name in that state with the given rank
-	## 30-day death rate
-}
-
-getRanking <- function(state, outcome) {
-	## Read outcome data
 	rawData<-read.csv("outcome-of-care-measures.csv",colClasses = "character", stringsAsFactors = FALSE);
 
 	##Create outcome possible values
@@ -20,8 +10,10 @@ getRanking <- function(state, outcome) {
 		stop("invalid state");
 	}else if(missing(outcome) || !outcome %in% oList){
 		stop("invalid outcome");
+	}else if(num!="best" && num!="worst" && suppressWarnings(is.na(as.numeric(num)))){
+		stop("invalid state");
 	}
-		
+	
 	## Subsetting data & Casting
 	hosp<-subset(rawData, State==state, select=c(2,11,17,23))	
 	#hosp[,1]<-as.character(hosp[,1])
@@ -37,12 +29,24 @@ getRanking <- function(state, outcome) {
 	## Exclude hospitals without data
 	hosp<-hosp[complete.cases(hosp),]
 	
-	minValue<-min(hosp$Values)
+	#1-step: Sort data by value descendant
+	#ranking<-unique(sort(hosp$Values, decreasing=FALSE));
+	ranking<-sort(hosp$Values, decreasing=FALSE);
+
+	#2-step: Get de n-essim value of ranking (NA if is too much hight)
+	if(num=="best") rValue<-ranking[1]
+	else if(num=="worst") rValue<-tail(ranking,1)
+	else {
+		num<-as.numeric(num)
+		rValue<-ranking[num]
+	}
 	
-	##Sort result alphabetical
-	ranking<-sort(hosp$Name[hosp$Values==minValue], decreasing=FALSE);	
-	#ranking<-as.character(ranking)
-	
-	## Return hospital name in that state with lowest 30-day death
-	ranking
+	#3-step: Get name list of elements with value = ranking
+	hospList<-sort(hosp$Name[hosp$Values==rValue], decreasing=FALSE);
+		
+	#4-step: Sort list by name and return the first element 
+	## Return hospital name in that state with the given rank
+	## 30-day death rate
+	hospList[1]
+
 }
